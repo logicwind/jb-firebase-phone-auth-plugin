@@ -61,6 +61,10 @@ const EventEmitter = new NativeEventEmitte(NativeModules.JBFirebasePhoneAuth)
 const { JBFirebasePhoneAuth } = NativeModules
 ```
 ### Methods
+- update Google Play Services
+	```
+	JBFirebasePhoneAuth.updateGooglePlayServices()
+	```
 - verify phoneNumber 
 	```
     JBFirebasePhoneAuth.verifyPhoneNumber(phoneNumber).then(verificationId => {
@@ -97,6 +101,8 @@ const { JBFirebasePhoneAuth } = NativeModules
 
 
 ### Manual installation
+
+**Refer [this link](https://bitbucket.org/JumpByte/firebase-phone-auth) for manual integration.**
 
 
 #### Android
