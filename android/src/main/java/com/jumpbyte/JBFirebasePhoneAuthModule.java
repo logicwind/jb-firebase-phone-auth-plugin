@@ -13,6 +13,7 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -113,16 +114,17 @@ public class JBFirebasePhoneAuthModule extends ReactContextBaseJavaModule {
                 new Intent("android.intent.action.VIEW", Uri.parse("market://details?id=com.google.android.gms")));
     }
 
-    @ReactMethod
+   @ReactMethod
     public void verifyPhoneNumber(String phoneNumber, Promise promise) {
-        final int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(getCurrentActivity());
-        Log.i(TAG, GooglePlayServicesUtil.GOOGLE_PLAY_SERVICES_VERSION_CODE + "");
+        GoogleApiAvailability playService = GoogleApiAvailability.getInstance();
+        final int status = playService.isGooglePlayServicesAvailable(getCurrentActivity());
+        Log.i(TAG, playService.GOOGLE_PLAY_SERVICES_VERSION_CODE + "");
         if (status != ConnectionResult.SUCCESS) {
-            Log.e(TAG, GooglePlayServicesUtil.getErrorString(status));
+            Log.e(TAG, playService.getErrorString(status));
             // ask user to update google play services.
-            promise.reject("401", GooglePlayServicesUtil.getErrorString(status));
+            promise.reject("401", playService.getErrorString(status));
         } else {
-            Log.i("TAG", GooglePlayServicesUtil.getErrorString(status));
+            Log.i("TAG", playService.getErrorString(status));
             // google play services is updated.
             Log.i(TAG, "verifyPhoneNumber");
             Log.i(TAG, "phoneNumber >> " + phoneNumber);
@@ -154,7 +156,7 @@ public class JBFirebasePhoneAuthModule extends ReactContextBaseJavaModule {
             public void onVerificationCompleted(PhoneAuthCredential credential) {
                 Log.i(TAG, "onVerificationCompleted");
                 Log.i(TAG, "signInWithPhoneAuth");
-                signIn(credential, promise);
+                // signIn(credential, promise);
                 sendEvent(ON_VERIFICATION_COMPLETED, credential.getSmsCode());
             }
 
@@ -212,6 +214,7 @@ public class JBFirebasePhoneAuthModule extends ReactContextBaseJavaModule {
                     if (task.getException() instanceof FirebaseAuthInvalidCredentialsException) {
                         Log.w(TAG, "Invalid code.");
                         promise.reject("201", "FirebaseAuthInvalidCredentialsException : Invalid code");
+                        return;
                     }
                     promise.reject("202", "signInWithCredential:failure " + task.getException());
                 }
