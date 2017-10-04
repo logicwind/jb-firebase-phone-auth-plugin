@@ -40,6 +40,7 @@ public class JBFirebasePhoneAuthModule extends ReactContextBaseJavaModule {
 
     public static final String REACT_CLASS = "JBFirebasePhoneAuth";
     private static ReactApplicationContext reactContext;
+    public static final String ON_VERIFICATION_COMPLETED_OTP = "onFirebasePhoneVerificationCompletedOtp";
     public static final String ON_VERIFICATION_COMPLETED = "onFirebasePhoneVerificationCompleted";
     public static final String ON_CODE_AUTO_RETRIEVAL_TIMEOUT = "onFirebasePhoneCodeAutoRetrievalTimeOut";
 
@@ -63,6 +64,7 @@ public class JBFirebasePhoneAuthModule extends ReactContextBaseJavaModule {
     public Map<String, Object> getConstants() {
         final Map<String, Object> constants = new HashMap<>();
         constants.put("ON_VERIFICATION_COMPLETED", ON_VERIFICATION_COMPLETED);
+        constants.put("ON_VERIFICATION_COMPLETED_OTP", ON_VERIFICATION_COMPLETED_OTP);
         constants.put("ON_CODE_AUTO_RETRIEVAL_TIMEOUT", ON_CODE_AUTO_RETRIEVAL_TIMEOUT);
         return constants;
     }
@@ -114,7 +116,7 @@ public class JBFirebasePhoneAuthModule extends ReactContextBaseJavaModule {
                 new Intent("android.intent.action.VIEW", Uri.parse("market://details?id=com.google.android.gms")));
     }
 
-   @ReactMethod
+    @ReactMethod
     public void verifyPhoneNumber(String phoneNumber, Promise promise) {
         GoogleApiAvailability playService = GoogleApiAvailability.getInstance();
         final int status = playService.isGooglePlayServicesAvailable(getCurrentActivity());
@@ -134,6 +136,7 @@ public class JBFirebasePhoneAuthModule extends ReactContextBaseJavaModule {
                     getCurrentActivity(), verificationCallback(promise));
         }
     }
+
 
     @ReactMethod
     public void resendVerificationCode(String phoneNumber, Promise promise) {
@@ -156,8 +159,11 @@ public class JBFirebasePhoneAuthModule extends ReactContextBaseJavaModule {
             public void onVerificationCompleted(PhoneAuthCredential credential) {
                 Log.i(TAG, "onVerificationCompleted");
                 Log.i(TAG, "signInWithPhoneAuth");
-                // signIn(credential, promise);
-                sendEvent(ON_VERIFICATION_COMPLETED, credential.getSmsCode());
+                if(credential.getSmsCode() == null){
+                    signIn(credential, promise);
+                }else{
+                    sendEvent(ON_VERIFICATION_COMPLETED_OTP, credential.getSmsCode());
+                }
             }
 
             @Override
@@ -204,6 +210,7 @@ public class JBFirebasePhoneAuthModule extends ReactContextBaseJavaModule {
                         object.put("phoneNumber", firebaseUser.getPhoneNumber());
                         object.put("providerId", firebaseUser.getProviderId());
                         object.put("uid", firebaseUser.getUid());
+                        sendEvent(ON_VERIFICATION_COMPLETED, object.toString());
                         promise.resolve(object.toString());
                     } catch (JSONException e) {
                         promise.reject("203", e.getMessage());
@@ -224,7 +231,7 @@ public class JBFirebasePhoneAuthModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void signOut(final Promise promise) {
-        Log.i(TAG, "signOut > " + firebaseUser.getPhoneNumber());
+//        Log.i(TAG, "signOut > " + firebaseUser.getPhoneNumber());
         firebaseAuth.signOut();
         promise.resolve("SignOut Successfully.");
     }
