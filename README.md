@@ -100,10 +100,6 @@ const { JBFirebasePhoneAuth } = NativeModules
 
 
 
-### Manual installation
-
-**Refer [this link](https://bitbucket.org/JumpByte/firebase-phone-auth) for manual integration.**
-
 
 #### Android
 
